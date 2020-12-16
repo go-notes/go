@@ -1,3 +1,8 @@
+# About Go-Notes
+
+Go-Notes 项目为golang源码阅读笔记。目的是在go开源项目源码研读过程中根据作者理解做些记录，同时方便其他人研读著名golang开源项目源代码。
+另外欢迎大家参与该记录和解读工作，如果有意向参与，可以发邮件至sioomy@qq.com或者直接搜索笔者微信，微信号:sioomy
+
 # The Go Programming Language
 
 Go is an open source programming language that makes it easy to build simple,

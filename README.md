@@ -6,6 +6,8 @@ Go-Notes 项目为golang源码阅读笔记。目的是在go开源项目源码研
 # How to Debug（调试方法）
 
 笔者通过goland进行调试，步骤如下：
+![Gopher image](doc/debugging_with_goland.png)
+![Gopher image](doc/debug_with_goland2.png)
 ```
 1.配置环境变量，goland(2020.1)中打开Goland->Preferences->Go->GOROOT
 配置新的goroot环境变量地址为项目根目录地址如:/Users/sioomy/work/golang/go

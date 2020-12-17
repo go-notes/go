@@ -9,13 +9,13 @@ Go-Notes 项目为golang源码阅读笔记。目的是在go开源项目源码研
 
 
 ### 1.配置环境变量
-![Gopher image](doc/debugging_with_goland.png)
+![image](doc/debugging_with_goland.png)
 ```
 goland(2020.1)中打开Goland->Preferences->Go->GOROOT
 配置新的goroot环境变量地址为项目根目录地址如:/Users/sioomy/work/golang/go
 ```
 ### 2.配置debug命令
-![Gopher image](doc/debug_with_goland2.png)
+![image](doc/debug_with_goland2.png)
 ```
 右键单机项目目录中./src/cmd/go/main.go
 选择Create 'go build main.go'

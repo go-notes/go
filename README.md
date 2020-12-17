@@ -13,13 +13,12 @@ Go-Notes 项目为golang源码阅读笔记。目的是在go开源项目源码研
 2.配置debug命令，右键单机项目目录中./src/cmd/go/main.go
 选择Create 'go build main.go'
 在弹出窗口中配置参数：
+Run kind:Directory
+Directory:/Users/sioomy/work/golang/go/src/cmd/go
 Working directory:/Users/sioomy/work/golang/go/src
 Program arguments:build ../test/varinit.go
 
-3.main.go特殊处理，注释掉main.go：84行代码
-//_ = go11tag
-
-4.运行，点击右上角的小虫子按钮，或右键单机main.go，选择Debug 'go build main.go'
+3.运行，点击右上角的小虫子按钮，或右键单机main.go，选择Debug 'go build main.go'
 ```
 根据以上步骤即可调试go主程序，上述事例中为通过build命令编译一个简单的golang代码../test/varinit.go
 

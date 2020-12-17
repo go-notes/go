@@ -54,7 +54,7 @@ Files:
 			return nil, nil, err
 		}
 		var list []string
-		data, err := ReadImports(r, false, &list)
+		data, err := ReadImports(r, false, &list)//只读取import和package
 		r.Close()
 		if err != nil {
 			return nil, nil, fmt.Errorf("reading %s: %v", name, err)

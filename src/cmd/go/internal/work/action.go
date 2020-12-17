@@ -374,7 +374,7 @@ func (b *Builder) cacheAction(mode string, p *load.Package, f func() *Action) *A
 // AutoAction returns the "right" action for go build or go install of p.
 func (b *Builder) AutoAction(mode, depMode BuildMode, p *load.Package) *Action {
 	if p.Name == "main" {
-		return b.LinkAction(mode, depMode, p)
+		return b.LinkAction(mode, depMode, p)//进入正题
 	}
 	return b.CompileAction(mode, depMode, p)
 }
@@ -398,16 +398,16 @@ func (b *Builder) CompileAction(mode, depMode BuildMode, p *load.Package) *Actio
 	}
 
 	// Construct package build action.
-	a := b.cacheAction("build", p, func() *Action {
+	a := b.cacheAction("build", p, func() *Action {//只执行一次
 		a := &Action{
 			Mode:    "build",
 			Package: p,
-			Func:    (*Builder).build,
+			Func:    (*Builder).build,//设置Do入口为build
 			Objdir:  b.NewObjdir(),
 		}
 
 		if p.Error == nil || !p.Error.IsImportCycle {
-			for _, p1 := range p.Internal.Imports {
+			for _, p1 := range p.Internal.Imports {//循环导入imports
 				a.Deps = append(a.Deps, b.CompileAction(depMode, depMode, p1))
 			}
 		}
@@ -515,14 +515,14 @@ func (b *Builder) vetAction(mode, depMode BuildMode, p *load.Package) *Action {
 // depMode is the action (build or install) to use when compiling dependencies.
 func (b *Builder) LinkAction(mode, depMode BuildMode, p *load.Package) *Action {
 	// Construct link action.
-	a := b.cacheAction("link", p, func() *Action {
+	a := b.cacheAction("link", p, func() *Action {//只运行一次，相当于去重运行
 		a := &Action{
 			Mode:    "link",
 			Package: p,
 		}
 
 		a1 := b.CompileAction(ModeBuild, depMode, p)
-		a.Func = (*Builder).link
+		a.Func = (*Builder).link//Do时候的运行入口
 		a.Deps = []*Action{a1}
 		a.Objdir = a1.Objdir
 

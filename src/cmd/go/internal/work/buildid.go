@@ -400,7 +400,7 @@ func (b *Builder) buildID(file string) string {
 
 // fileHash returns the content hash of the named file.
 func (b *Builder) fileHash(file string) string {
-	sum, err := cache.FileHash(file)
+	sum, err := cache.FileHash(file)//读取文件内容进行hash
 	if err != nil {
 		return ""
 	}

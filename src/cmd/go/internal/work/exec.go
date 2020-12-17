@@ -176,7 +176,7 @@ func (b *Builder) Do(root *Action) {
 					b.exec.Lock()
 					a := b.ready.pop()
 					b.exec.Unlock()
-					handle(a)
+					handle(a)//处理
 				case <-base.Interrupted:
 					base.SetExitStatus(1)
 					return
@@ -322,7 +322,7 @@ func (b *Builder) buildActionID(a *Action) cache.ActionID {
 		p.SwigCXXFiles,
 	)
 	for _, file := range inputFiles {
-		fmt.Fprintf(h, "file %s %s\n", file, b.fileHash(filepath.Join(p.Dir, file)))
+		fmt.Fprintf(h, "file %s %s\n", file, b.fileHash(filepath.Join(p.Dir, file)))//文件hash码生成并写入h
 	}
 	for _, a1 := range a.Deps {
 		p1 := a1.Package

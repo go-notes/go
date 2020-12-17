@@ -2144,16 +2144,16 @@ func PackagesAndErrors(patterns []string) []*Package {
 		// Listing is only supported with all patterns referring to either:
 		// - Files that are part of the same directory.
 		// - Explicit package paths or patterns.
-		if strings.HasSuffix(p, ".go") {
+		if strings.HasSuffix(p, ".go") {//后缀包含.go
 			// We need to test whether the path is an actual Go file and not a
 			// package path or pattern ending in '.go' (see golang.org/issue/34653).
-			if fi, err := os.Stat(p); err == nil && !fi.IsDir() {
-				return []*Package{GoFilesPackage(patterns)}
+			if fi, err := os.Stat(p); err == nil && !fi.IsDir() {//err==nill并且不是目录则加载package
+				return []*Package{GoFilesPackage(patterns)}//加载package *****  主要函数
 			}
 		}
 	}
 
-	matches := ImportPaths(patterns)
+	matches := ImportPaths(patterns)//仅读取import 和package
 	var (
 		pkgs    []*Package
 		stk     ImportStack
@@ -2225,16 +2225,16 @@ func setToolFlags(pkgs ...*Package) {
 
 func ImportPaths(args []string) []*search.Match {
 	if ModInit(); cfg.ModulesEnabled {
-		return ModImportPaths(args)
+		return ModImportPaths(args)//加载go.mod,初始化函数在modload/init
 	}
-	return search.ImportPaths(args)
+	return search.ImportPaths(args)//加载main.go
 }
 
 // PackagesForBuild is like Packages but exits
 // if any of the packages or their dependencies have errors
 // (cannot be built).
 func PackagesForBuild(args []string) []*Package {
-	pkgs := PackagesAndErrors(args)
+	pkgs := PackagesAndErrors(args)  //主要函数，加载package
 	printed := map[*PackageError]bool{}
 	for _, pkg := range pkgs {
 		if pkg.Error != nil {
@@ -2277,10 +2277,10 @@ func PackagesForBuild(args []string) []*Package {
 // (typically named on the command line). The target is named p.a for
 // package p or named after the first Go file for package main.
 func GoFilesPackage(gofiles []string) *Package {
-	ModInit()
+	ModInit()//初始化go.mod ,函数定义在modload/init.go中（Init determines whether module mode is enabled）
 
 	for _, f := range gofiles {
-		if !strings.HasSuffix(f, ".go") {
+		if !strings.HasSuffix(f, ".go") {//再次检查是否含有.go,如果不含有.go后缀，则直接返回含有Error的空包
 			pkg := new(Package)
 			pkg.Internal.Local = true
 			pkg.Internal.CmdlineFiles = true
@@ -2304,13 +2304,13 @@ func GoFilesPackage(gofiles []string) *Package {
 	var dir string
 	for _, file := range gofiles {
 		fi, err := os.Stat(file)
-		if err != nil {
+		if err != nil {//文件必须存在，检查两次了
 			base.Fatalf("%s", err)
 		}
-		if fi.IsDir() {
+		if fi.IsDir() {//再次检查，不能是目录，比较严谨
 			base.Fatalf("%s is a directory, should be a Go file", file)
 		}
-		dir1, _ := filepath.Split(file)
+		dir1, _ := filepath.Split(file)//  dir1  /Users/sioomy/work/golang/go/test/
 		if dir1 == "" {
 			dir1 = "./"
 		}
@@ -2324,7 +2324,7 @@ func GoFilesPackage(gofiles []string) *Package {
 	ctxt.ReadDir = func(string) ([]os.FileInfo, error) { return dirent, nil }
 
 	if cfg.ModulesEnabled {
-		ModImportFromFiles(gofiles)
+		ModImportFromFiles(gofiles)//读取import部分
 	}
 
 	var err error

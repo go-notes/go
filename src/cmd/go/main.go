@@ -42,7 +42,7 @@ import (
 func init() {
 	base.Go.Commands = []*base.Command{
 		bug.CmdBug,
-		work.CmdBuild,
+		work.CmdBuild,//go build
 		clean.CmdClean,
 		doc.CmdDoc,
 		envcmd.CmdEnv,

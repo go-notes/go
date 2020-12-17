@@ -342,13 +342,13 @@ func oneMainPkg(pkgs []*load.Package) []*load.Package {
 var pkgsFilter = func(pkgs []*load.Package) []*load.Package { return pkgs }
 
 var runtimeVersion = runtime.Version()
-
+//build命令入口
 func runBuild(cmd *base.Command, args []string) {
 	BuildInit()
 	var b Builder
 	b.Init()
 
-	pkgs := load.PackagesForBuild(args)
+	pkgs := load.PackagesForBuild(args)//加载package（不包含代码）, ../../test/vainit.go，主要函数
 
 	explicitO := len(cfg.BuildO) > 0
 
@@ -377,7 +377,7 @@ func runBuild(cmd *base.Command, args []string) {
 		depMode = ModeInstall
 	}
 
-	pkgs = omitTestOnly(pkgsFilter(load.Packages(args)))
+	pkgs = omitTestOnly(pkgsFilter(load.Packages(args)))//又加载了一遍
 
 	// Special case -o /dev/null by not writing at all.
 	if cfg.BuildO == os.DevNull {
@@ -388,7 +388,7 @@ func runBuild(cmd *base.Command, args []string) {
 		// If the -o name exists and is a directory, then
 		// write all main packages to that directory.
 		// Otherwise require only a single package be built.
-		if fi, err := os.Stat(cfg.BuildO); err == nil && fi.IsDir() {
+		if fi, err := os.Stat(cfg.BuildO); err == nil && fi.IsDir() {//又判断，是不是目录（不是）
 			if !explicitO {
 				base.Fatalf("go build: build output %q already exists and is a directory", cfg.BuildO)
 			}
@@ -419,8 +419,8 @@ func runBuild(cmd *base.Command, args []string) {
 		p.Target = cfg.BuildO
 		p.Stale = true // must build - not up to date
 		p.StaleReason = "build -o flag in use"
-		a := b.AutoAction(ModeInstall, depMode, p)
-		b.Do(a)
+		a := b.AutoAction(ModeInstall, depMode, p)//***主要函数   生成源代码处理行为列表，源代码文件(package)维度
+		b.Do(a)//开
 		return
 	}
 

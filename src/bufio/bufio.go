@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	defaultBufSize = 4096
+	defaultBufSize = 4096 //默认创建的byte数组的大小
 )
 
 var (
@@ -30,20 +30,23 @@ var (
 
 // Reader implements buffering for an io.Reader object.
 type Reader struct {
-	buf          []byte
+	buf          []byte //底层存储的字节slice
 	rd           io.Reader // reader provided by the client
-	r, w         int       // buf read and write positions
+	r, w         int       // buf read and write positions,读写在buf中的位置
 	err          error
-	lastByte     int // last byte read for UnreadByte; -1 means invalid
-	lastRuneSize int // size of last rune read for UnreadRune; -1 means invalid
+	lastByte     int // last byte read for UnreadByte; -1 means invalid，上次读取的字节，主要用于字节读取
+	lastRuneSize int // size of last rune read for UnreadRune; -1 means invalid，上次读取的4字节
 }
 
-const minReadBufferSize = 16
-const maxConsecutiveEmptyReads = 100
+const minReadBufferSize = 16 //最小的读的自己大小
+const maxConsecutiveEmptyReads = 100 //最大次数
 
 // NewReaderSize returns a new Reader whose buffer has at least the specified
 // size. If the argument io.Reader is already a Reader with large enough
 // size, it returns the underlying Reader.
+//通过已经实现了io.reader,创建大小为size的reader
+//如果已经是*Reader,而且底层存储的slice的大小大于要创建的size直接返回
+//创建至少minReadBufferSize大小的Reader,设置底层字节数组和rd
 func NewReaderSize(rd io.Reader, size int) *Reader {
 	// Is it already a Reader?
 	b, ok := rd.(*Reader)
@@ -59,6 +62,7 @@ func NewReaderSize(rd io.Reader, size int) *Reader {
 }
 
 // NewReader returns a new Reader whose buffer has the default size.
+//创建默认大小的reader
 func NewReader(rd io.Reader) *Reader {
 	return NewReaderSize(rd, defaultBufSize)
 }
@@ -87,7 +91,7 @@ var errNegativeRead = errors.New("bufio: reader returned negative count from Rea
 func (b *Reader) fill() {
 	// Slide existing data to beginning.
 	if b.r > 0 {
-		copy(b.buf, b.buf[b.r:b.w])
+		copy(b.buf, b.buf[b.r:b.w])//平移底层的字节数组,修改读取和写入的位置
 		b.w -= b.r
 		b.r = 0
 	}
@@ -98,11 +102,11 @@ func (b *Reader) fill() {
 
 	// Read new data: try a limited number of times.
 	for i := maxConsecutiveEmptyReads; i > 0; i-- {
-		n, err := b.rd.Read(b.buf[b.w:])
+		n, err := b.rd.Read(b.buf[b.w:])//rd读取n个字节数据到缓存字节数组
 		if n < 0 {
 			panic(errNegativeRead)
 		}
-		b.w += n
+		b.w += n//后移写位置
 		if err != nil {
 			b.err = err
 			return
@@ -135,6 +139,7 @@ func (b *Reader) Peek(n int) ([]byte, error) {
 	b.lastByte = -1
 	b.lastRuneSize = -1
 
+	//当前的可读数据小于n,或者未满,读取数据到缓冲区
 	for b.w-b.r < n && b.w-b.r < len(b.buf) && b.err == nil {
 		b.fill() // b.w-b.r < len(b.buf) => buffer is not full
 	}
@@ -170,16 +175,16 @@ func (b *Reader) Discard(n int) (discarded int, err error) {
 	}
 	remain := n
 	for {
-		skip := b.Buffered()
+		skip := b.Buffered()//当前w-r
 		if skip == 0 {
-			b.fill()
+			b.fill()//读取fill
 			skip = b.Buffered()
 		}
 		if skip > remain {
 			skip = remain
 		}
-		b.r += skip
-		remain -= skip
+		b.r += skip//r向前skip
+		remain -= skip //剩余的待跳过的
 		if remain == 0 {
 			return n, nil
 		}
@@ -196,21 +201,21 @@ func (b *Reader) Discard(n int) (discarded int, err error) {
 // To read exactly len(p) bytes, use io.ReadFull(b, p).
 // At EOF, the count will be zero and err will be io.EOF.
 func (b *Reader) Read(p []byte) (n int, err error) {
-	n = len(p)
+	n = len(p)//待读取的长度
 	if n == 0 {
 		if b.Buffered() > 0 {
 			return 0, nil
 		}
 		return 0, b.readErr()
 	}
-	if b.r == b.w {
+	if b.r == b.w {//当前可读数据为0
 		if b.err != nil {
 			return 0, b.readErr()
 		}
 		if len(p) >= len(b.buf) {
 			// Large read, empty buffer.
 			// Read directly into p to avoid copy.
-			n, b.err = b.rd.Read(p)
+			n, b.err = b.rd.Read(p)//读取的数据大于buff,目前buff可读数据为0，直接读取数据到p
 			if n < 0 {
 				panic(errNegativeRead)
 			}
@@ -224,7 +229,7 @@ func (b *Reader) Read(p []byte) (n int, err error) {
 		// Do not use b.fill, which will loop.
 		b.r = 0
 		b.w = 0
-		n, b.err = b.rd.Read(b.buf)
+		n, b.err = b.rd.Read(b.buf)//读取到buff中
 		if n < 0 {
 			panic(errNegativeRead)
 		}
@@ -235,6 +240,7 @@ func (b *Reader) Read(p []byte) (n int, err error) {
 	}
 
 	// copy as much as we can
+	//buff中读取数据返回
 	n = copy(p, b.buf[b.r:b.w])
 	b.r += n
 	b.lastByte = int(b.buf[b.r-1])
@@ -332,6 +338,7 @@ func (b *Reader) ReadSlice(delim byte) (line []byte, err error) {
 	s := 0 // search start index
 	for {
 		// Search buffer.
+		//delim的位置
 		if i := bytes.IndexByte(b.buf[b.r+s:b.w], delim); i >= 0 {
 			i += s
 			line = b.buf[b.r : b.r+i+1]
@@ -357,6 +364,7 @@ func (b *Reader) ReadSlice(delim byte) (line []byte, err error) {
 
 		s = b.w - b.r // do not rescan area we scanned before
 
+		//读取填满
 		b.fill() // buffer is not full
 	}
 

@@ -683,7 +683,7 @@ func (b *Builder) build(a *Action) (err error) {
 
 	// Compile Go.
 	objpkg := objdir + "_pkg_.a"
-	ofile, out, err := BuildToolchain.gc(b, a, objpkg, icfg.Bytes(), symabis, len(sfiles) > 0, gofiles)
+	ofile, out, err := BuildToolchain.gc(b, a, objpkg, icfg.Bytes(), symabis, len(sfiles) > 0, gofiles)//编译go脚本
 	if len(out) > 0 {
 		output := b.processOutput(out)
 		if p.Module != nil && !allowedVersion(p.Module.GoVersion) {
@@ -1954,7 +1954,7 @@ func (b *Builder) runOut(a *Action, dir string, env []string, cmdargs ...interfa
 	}
 
 	var buf bytes.Buffer
-	cmd := exec.Command(cmdline[0], cmdline[1:]...)
+	cmd := exec.Command(cmdline[0], cmdline[1:]...)//compile命令，编译代码
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf
 	cleanup := passLongArgsInResponseFiles(cmd)

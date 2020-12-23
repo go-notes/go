@@ -569,7 +569,7 @@ func Main(archInit func(*Arch)) {
 	loadsys()
 
 	timings.Start("fe", "parse")
-	lines := parseFiles(flag.Args())
+	lines := parseFiles(flag.Args())//词法分析 -- lexical analysis   生成xtop (AST)
 	timings.Stop()
 	timings.AddEvent(int64(lines), "lines")
 
@@ -594,7 +594,7 @@ func Main(archInit func(*Arch)) {
 	for i := 0; i < len(xtop); i++ {
 		n := xtop[i]
 		if op := n.Op; op != ODCL && op != OAS && op != OAS2 && (op != ODCLTYPE || !n.Left.Name.Param.Alias) {
-			xtop[i] = typecheck(n, ctxStmt)
+			xtop[i] = typecheck(n, ctxStmt) //类型检查
 		}
 	}
 

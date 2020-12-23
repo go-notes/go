@@ -145,7 +145,7 @@ func (gcToolchain) gc(b *Builder, a *Action, archive string, importcfg []byte, s
 		args = append(args, mkAbs(p.Dir, f))
 	}
 
-	output, err = b.runOut(a, p.Dir, nil, args...)
+	output, err = b.runOut(a, p.Dir, nil, args...)//执行命令进行编译
 	return ofile, output, err
 }
 

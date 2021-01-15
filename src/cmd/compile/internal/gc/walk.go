@@ -61,7 +61,7 @@ func walk(fn *Node) {
 	if nerrors != 0 {
 		return
 	}
-	walkstmtlist(Curfn.Nbody.Slice())
+	walkstmtlist(Curfn.Nbody.Slice())//这里遍历的是函数内部具体执行的语句
 	if Debug['W'] != 0 {
 		s := fmt.Sprintf("after walk %v", Curfn.Func.Nname.Sym)
 		dumplist(s, Curfn.Nbody)

@@ -25,10 +25,10 @@ import (
 // and its root represented by *Node is appended to xtop.
 // Returns the total count of parsed lines.
 func parseFiles(filenames []string) uint {
-	noders := make([]*noder, 0, len(filenames))
+	noders := make([]*noder, 0, len(filenames))  //noder与文件一一对应
 	// Limit the number of simultaneously open files.
 	sem := make(chan struct{}, runtime.GOMAXPROCS(0)+10)
-
+	//filename是待编译的golang源码文件，如/Users/sioomy/work/golang/go/test.go
 	for _, filename := range filenames {
 		p := &noder{
 			basemap: make(map[*syntax.PosBase]*src.PosBase),
@@ -40,26 +40,27 @@ func parseFiles(filenames []string) uint {
 			sem <- struct{}{}
 			defer func() { <-sem }()
 			defer close(p.err)
+			//初始化新的PosBase,PosBase是一个连表结构，pos中的posBase默认指向base本身（环形连表？）
 			base := syntax.NewFileBase(filename)
-
 			f, err := os.Open(filename)
 			if err != nil {
 				p.error(syntax.Error{Msg: err.Error()})
 				return
 			}
 			defer f.Close()
-
+			//根据token,syntax.Parse把所有的把所有[类型声明]的token都存储到file的DeclList，func类型的代码会存储在Decl（declear）的Body里
+			//这里p.file实际上就是ast语法树
 			p.file, _ = syntax.Parse(base, f, p.error, p.pragma, syntax.CheckBranches) // errors are tracked via p.error
 		}(filename)
 	}
 
 	var lines uint
 	for _, p := range noders {
-		for e := range p.err {
+		for e := range p.err {//这里有点意思，range chan，如果chan没有被写入，则就会卡主，这里主要是起到阻塞的上面的携程的作用
 			p.yyerrorpos(e.Pos, "%s", e.Msg)
 		}
 
-		p.node()
+		p.node() //生成xtop
 		lines += p.file.Lines
 		p.file = nil // release memory
 

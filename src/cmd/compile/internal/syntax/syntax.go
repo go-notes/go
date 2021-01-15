@@ -75,10 +75,10 @@ func Parse(base *PosBase, src io.Reader, errh ErrorHandler, pragh PragmaHandler,
 		}
 	}()
 
-	var p parser
-	p.init(base, src, errh, pragh, mode)
-	p.next()
-	return p.fileOrNil(), p.first
+	var p parser  //parser继承于scanner继承于source
+	p.init(base, src, errh, pragh, mode)//初始化了parser，这里这个是以文件维度的主要结构，这里会初始化一个回调函数，用来处理PosBase环形列表添加环
+	p.next()//生成token(这里只生成第一个token)这里是一个token一个token的生成，然后放入到parser(scanner里)，可以理解next()就是为了生成token
+	return p.fileOrNil(), p.first  //fileOrNil会对这个token处理，然后继续next()
 }
 
 // ParseFile behaves like Parse but it reads the source from the named file.

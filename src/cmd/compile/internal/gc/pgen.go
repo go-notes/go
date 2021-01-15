@@ -217,7 +217,7 @@ func funccompile(fn *Node) {
 	dclcontext = PAUTO
 	Curfn = fn
 
-	compile(fn)
+	compile(fn)//walk and  生成机器代码
 
 	Curfn = nil
 	dclcontext = PEXTERN
@@ -272,7 +272,7 @@ func compile(fn *Node) {
 	}
 
 	if compilenow(fn) {
-		compileSSA(fn, 0)
+		compileSSA(fn, 0)//生成PLIST再生成机器代码
 	} else {
 		compilequeue = append(compilequeue, fn)
 	}

@@ -744,7 +744,7 @@ func Main(archInit func(*Arch)) {
 	for i := 0; i < len(xtop); i++ {
 		n := xtop[i]
 		if n.Op == ODCLFUNC {
-			funccompile(n)
+			funccompile(n)  //--------编译，这里主要是会walk(),然后就walk各种语句片段，然后生成机器代码
 			fcount++
 		}
 	}

@@ -43,7 +43,7 @@ func (p *parser) init(file *PosBase, r io.Reader, errh ErrorHandler, pragh Pragm
 		// handler is always at or after the current reading
 		// position, it is safe to use the most recent position
 		// base to compute the corresponding Pos value.
-		func(line, col uint, msg string) {
+		func(line, col uint, msg string) {//errh回调
 			if msg[0] != '/' {
 				p.errorAt(p.posAt(line, col), msg)
 				return
@@ -57,7 +57,7 @@ func (p *parser) init(file *PosBase, r io.Reader, errh ErrorHandler, pragh Pragm
 				var pos Pos // position immediately following the comment
 				if msg[1] == '/' {
 					// line comment (newline is part of the comment)
-					pos = MakePos(p.file, line+1, colbase)
+					pos = MakePos(p.file, line+1, colbase)//新的pos,base指向根basePos
 				} else {
 					// regular comment
 					// (if the comment spans multiple lines it's not
@@ -65,7 +65,7 @@ func (p *parser) init(file *PosBase, r io.Reader, errh ErrorHandler, pragh Pragm
 					// by updateBase)
 					pos = MakePos(p.file, line, col+uint(len(msg)))
 				}
-				p.updateBase(pos, line, col+2+5, text[5:]) // +2 to skip over // or /*
+				p.updateBase(pos, line, col+2+5, text[5:]) // +2 to skip over // or /*   根basePos(既parser的base指向Make出的pos--向环形链表中加项)parser 本身就是一个继承与scanner的子类
 				return
 			}
 
@@ -381,13 +381,13 @@ func (p *parser) fileOrNil() *File {
 	f.pos = p.pos()
 
 	// PackageClause
-	if !p.got(_Package) {
+	if !p.got(_Package) {//校验第一个token 必须是_Package
 		p.syntaxError("package statement must be first")
 		return nil
 	}
 	f.Pragma = p.takePragma()
 	f.PkgName = p.name()
-	p.want(_Semi)
+	p.want(_Semi)//这里检查是否是以;结尾？
 
 	// don't bother continuing if package clause has errors
 	if p.first != nil {
@@ -395,11 +395,12 @@ func (p *parser) fileOrNil() *File {
 	}
 
 	// { ImportDecl ";" }
-	for p.got(_Import) {
-		f.DeclList = p.appendGroup(f.DeclList, p.importDecl)
-		p.want(_Semi)
+	for p.got(_Import) {//解析所有的import
+		f.DeclList = p.appendGroup(f.DeclList, p.importDecl)//添加import 详情
+		p.want(_Semi)//检查结束
 	}
 
+	//根据token添加各种类型声明的Decl
 	// { TopLevelDecl ";" }
 	for p.tok != _EOF {
 		switch p.tok {
